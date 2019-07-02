@@ -1,0 +1,20 @@
+FROM alpine:3.8
+
+MAINTAINER Karim Boumedhel <karimboumedhel@gmail.com>
+
+LABEL name="karmab/tvshows" \
+      maintainer="karimboumedhel@gmail.com" \
+      vendor="Karmalabs" \
+      version="latest" \
+      release="0" \
+      summary="Tvshows finales" \
+      description="Tvshows finales"
+
+EXPOSE 9000
+
+RUN apk add --update --no-cache py-pip python3-dev
+RUN pip3 install -U --no-cache-dir setuptools pip
+RUN pip3 install --no-cache-dir -e git+https://github.com/karmab/tvshows.git
+
+ENTRYPOINT ["/usr/bin/tvshows"]
+#CMD ["-h"]

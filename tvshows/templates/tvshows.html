@@ -1,0 +1,23 @@
+<html>
+<head></head>
+<body>
+<table border="1">
+<thead>
+<tr>
+<th>Image</th>
+<th>Name</th>
+<th>Finale</th>
+</tr>
+</thead>
+<tbody>
+{% for tvshow in results|sort(attribute='name') %}
+<tr>
+<td>{{ tvshow.image }}</td>
+<td>{{ tvshow.name }}</td>
+<td>{{ tvshow.finale}}</td>
+</tr>
+{% endfor %}
+</tbody>
+</table>
+</body>
+</html>
