@@ -6,8 +6,7 @@ app = Flask(__name__)
 port = os.environ.get('PORT', 9000)
 debug = bool(os.environ.get('DEBUG', True))
 db = os.environ.get('DB', 'tvshows')
-# host = os.environ.get('DBHOST', '127.0.0.1')
-host = os.environ.get('DBHOST', '192.168.122.66')
+host = os.environ.get('DBHOST', '127.0.0.1')
 user = os.environ.get('DBUSER', 'dbadmin')
 password = os.environ.get('DBPASSWORD', 'dbadmin')
 tvdb.KEYS.API_KEY = os.environ.get('TVDB_KEY')
@@ -58,7 +57,7 @@ def tvshows():
         emps = db.list_tvshows()
         return emps
     results = db_query()
-    return render_template('tvshows.html', results=results, content_type='application/json')
+    return render_template('index.html', results=results, content_type='application/json')
 
 
 def run():
