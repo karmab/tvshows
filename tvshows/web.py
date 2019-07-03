@@ -1,4 +1,4 @@
-from flask import Flask, render_template
+from flask import Flask, render_template, request, jsonify
 import pymysql
 import os
 from tvdbhelper import get_image
@@ -19,16 +19,17 @@ class Database:
         self.names = []
         self.cur.execute("SELECT name, image FROM tvshows")
         result = self.cur.fetchall()
+        info = {}
         for entry in result:
             name = entry['name']
             image = entry['image']
-            if name not in self.names:
-                self.names.append(name)
             if image == '':
-                image = get_image(name)
+                image = info[name] if name in info else get_image(name)
                 if image is not None:
                     self.cur.execute("update tvshows set image='%s' where name='%s'" % (image, name))
                     self.con.commit()
+            info[name] = image
+        self.names = sorted([name for name in info])
 
     def list_tvshows(self):
         results = []
@@ -50,11 +51,17 @@ def list_tvshows():
     return render_template('index.html', tvshows=tvshows, content_type='application/json')
 
 
-@app.route('/new')
+@app.route('/new', methods=['POST'])
 def add_tvshow():
     name, finale = '', ''
+    name = request.form['name']
+    finale = request.form['finale']
     db = Database()
     db.add_tvshow(name, finale)
+    result = {'result': 'success'}
+    response = jsonify(result)
+    response.status_code = 200
+    return response
 
 
 def run():

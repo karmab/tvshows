@@ -1,5 +1,7 @@
 <html>
 <head>
+<script src="{{ url_for('static', filename='js/jquery.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/actions.js') }}"></script>
 <style>
 
 div.gallery {
@@ -25,6 +27,11 @@ div.desc {
 </style>
 </head>
 <body>
+<form id="newtvshow">
+Name:<input type="text" name="name" id="name">
+Finale:<input type="text" name="finale" id="finale">
+</form>
+<button onclick="tvshowcreate()">Add</button><br>
 {% for tvshow in tvshows|sort(attribute='name') %}
 {% if tvshow.image != '' %}
  {% set imgsrc = "https://www.thetvdb.com/banners/" + tvshow.image %}
