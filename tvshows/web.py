@@ -40,24 +40,49 @@ class Database:
         return results
 
     def add_tvshow(self, name, finale):
-        self.cur.execute("insert into tvshows  values (0, '%s','%s','');" % (name, finale))
+        self.cur.execute("insert into tvshows  values (0, '%s','%s','')" % (name, finale))
+        self.con.commit()
+
+    def delete_tvshow(self, name):
+        self.cur.execute("delete from tvshows  where name = '%s'" % (name))
         self.con.commit()
 
 
 @app.route('/')
-def list_tvshows():
+def index():
     db = Database()
     tvshows = db.list_tvshows()
     return render_template('index.html', tvshows=tvshows, content_type='application/json')
 
 
+@app.route('/tvshows')
+def list_tvshows():
+    """
+
+    :return:
+    """
+    db = Database()
+    tvshows = db.list_tvshows()
+    return render_template('tvshows.html', tvshows=tvshows, content_type='application/json')
+
+
 @app.route('/new', methods=['POST'])
 def add_tvshow():
-    name, finale = '', ''
     name = request.form['name']
     finale = request.form['finale']
     db = Database()
     db.add_tvshow(name, finale)
+    result = {'result': 'success'}
+    response = jsonify(result)
+    response.status_code = 200
+    return response
+
+
+@app.route('/delete', methods=['POST'])
+def delete_tvshow():
+    name = request.form['name']
+    db = Database()
+    db.delete_tvshow(name)
     result = {'result': 'success'}
     response = jsonify(result)
     response.status_code = 200

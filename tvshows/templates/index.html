@@ -1,49 +1,17 @@
 <html>
-<head>
-<script src="{{ url_for('static', filename='js/jquery.min.js') }}"></script>
-<script src="{{ url_for('static', filename='js/actions.js') }}"></script>
-<style>
-
-div.gallery {
-  margin: 5px;
-  border: 1px solid #ccc;
-  float: left;
-  width: 180px;
-}
-
-div.gallery:hover {
-  border: 1px solid #777;
-}
-
-div.gallery img {
-  width: 100%;
-  height: auto;
-}
-
-div.desc {
-  padding: 15px;
-  text-align: center;
-}
-</style>
-</head>
+{% include "head.html" %}
 <body>
+<div id="wheel"></div>
+<div class='notifications top-right'></div>
+<div><h3>Browse other the banner of your show to get a possible finale... or write your own!!!</h3><div><p>
 <form id="newtvshow">
-Name:<input type="text" name="name" id="name">
-Finale:<input type="text" name="finale" id="finale">
+  Name:   <input type="text" name="name" id="name" required><br>
+  Finale: <input type="finale" name="finale" id="finale" required><br>
 </form>
-<button onclick="tvshowcreate()">Add</button><br>
-{% for tvshow in tvshows|sort(attribute='name') %}
-{% if tvshow.image != '' %}
- {% set imgsrc = "https://www.thetvdb.com/banners/" + tvshow.image %}
-{% else %}
- {% set imgsrc = url_for('static', filename='images/NA.png') %}
-{% endif %}
-<div class="gallery">
-  <!--a target="_blank" href="/info?name={{ tvshow.name }}"-->
-      <img src="{{ imgsrc }}" title="{{ tvshow.finale }}" alt="N/A" width="600" height="400">
-  <!--/a!-->
-  <div class="desc">{{ tvshow.name }}</div>
-</div>
-{% endfor %}
+<input type="submit" value="Submit" onclick="tvshowcreate()"><br>
+<div id="tvshows" cellspacing="0" width="100%">Loading data....</div>
+<script>
+$(document).ready(tvshowslist);
+</script>
 </body>
 </html>

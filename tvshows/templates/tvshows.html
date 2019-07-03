@@ -1,0 +1,11 @@
+{% for tvshow in tvshows|sort(attribute='name') %}
+{% if tvshow.image != '' %}
+ {% set imgsrc = "https://www.thetvdb.com/banners/" + tvshow.image %}
+{% else %}
+ {% set imgsrc = url_for('static', filename='images/NA.png') %}
+{% endif %}
+<div class="gallery">
+  <img src="{{ imgsrc }}" title="{{ tvshow.finale }}" alt="N/A" width="600" height="400">
+  <div class="desc">{{ tvshow.name }} <span class="glyphicon glyphicon-trash red" data-toggle="tooltip" title="Delete Show" onclick="tvshowdelete('{{ tvshow.name }}');"></span></div>
+</div>
+{% endfor %}
