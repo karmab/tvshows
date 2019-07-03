@@ -1,23 +1,42 @@
 <html>
-<head></head>
+<head>
+<style>
+
+div.gallery {
+  margin: 5px;
+  border: 1px solid #ccc;
+  float: left;
+  width: 180px;
+}
+
+div.gallery:hover {
+  border: 1px solid #777;
+}
+
+div.gallery img {
+  width: 100%;
+  height: auto;
+}
+
+div.desc {
+  padding: 15px;
+  text-align: center;
+}
+</style>
+</head>
 <body>
-<table border="1">
-<thead>
-<tr>
-<th>Image</th>
-<th>Name</th>
-<th>Finale</th>
-</tr>
-</thead>
-<tbody>
-{% for tvshow in results|sort(attribute='name') %}
-<tr>
-<td><img src="https://www.thetvdb.com/banners/{{ tvshow.image }}"/></td>
-<td>{{ tvshow.name }}</td>
-<td>{{ tvshow.finale}}</td>
-</tr>
+{% for tvshow in tvshows|sort(attribute='name') %}
+{% if tvshow.image != '' %}
+ {% set imgsrc = "https://www.thetvdb.com/banners/" + tvshow.image %}
+{% else %}
+ {% set imgsrc = url_for('static', filename='images/NA.png') %}
+{% endif %}
+<div class="gallery">
+  <!--a target="_blank" href="/info?name={{ tvshow.name }}"-->
+      <img src="{{ imgsrc }}" title="{{ tvshow.finale }}" alt="N/A" width="600" height="400">
+  <!--/a!-->
+  <div class="desc">{{ tvshow.name }}</div>
+</div>
 {% endfor %}
-</tbody>
-</table>
 </body>
 </html>

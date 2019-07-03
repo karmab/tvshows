@@ -1,1 +1,5 @@
 prout
+build
+dist
+tvshows.egg-info
+tvshows/__pycache__
