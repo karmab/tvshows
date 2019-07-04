@@ -1,0 +1,11 @@
+[Unit]
+Description=Tvshows Service
+After=network.target
+[Service]
+Type=simple
+Environment="TVDB_KEY="
+User=root
+ExecStart=/usr/local/bin/tvshows
+Restart=on-failure
+[Install]
+WantedBy=multi-user.target

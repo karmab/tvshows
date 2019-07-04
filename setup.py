@@ -9,7 +9,7 @@ if os.path.exists('README.rst'):
 
 setup(
     name='tvshows',
-    version='0.1',
+    version='0.2',
     include_package_data=True,
     packages=find_packages(),
     zip_safe=False,

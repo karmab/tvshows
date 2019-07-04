@@ -1,7 +1,7 @@
 from flask import Flask, render_template, request, jsonify
 import pymysql
 import os
-from tvdbhelper import get_image
+from tvshows.tvdbhelper import get_image
 app = Flask(__name__)
 port = os.environ.get('PORT', 9000)
 debug = bool(os.environ.get('DEBUG', True))
