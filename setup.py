@@ -19,7 +19,7 @@ setup(
     author='Karim Boumedhel',
     author_email='karimboumedhel@gmail.com',
     license='ASL',
-    install_requires=['flask', 'pymysql', 'tvdbsimple'],
+    install_requires=['flask', 'kubernetes', 'tvdbsimple'],
     entry_points='''
         [console_scripts]
         tvshows=tvshows.web:run

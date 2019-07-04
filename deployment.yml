@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tvshows
+  namespace: default
+spec:
+  selector:
+    matchLabels:
+      app: tvshows
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: tvshows
+    spec:
+      containers:
+      - name: tvshows
+        image: karmab/tvshows:v2
+        ports:
+        - containerPort: 9000
+        env:
+        - name: TVDB_KEY
+          value: ""

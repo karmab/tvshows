@@ -1,0 +1,8 @@
+apiVersion: "kool.karmalabs.com/v1"
+kind: Tvshow
+metadata:
+  name: "game-of-thrones"
+spec:
+  finales:
+  - lord of the knight is hired to refresh spain
+  image: graphical/5ca9a495dd45f.jpg

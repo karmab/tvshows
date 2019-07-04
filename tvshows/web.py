@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request, jsonify
-import pymysql
+from kubernetes import client, config
 import os
+from random import choice
 from tvshows.tvdbhelper import get_image
 app = Flask(__name__)
 port = os.environ.get('PORT', 9000)
@@ -10,49 +11,34 @@ host = os.environ.get('DB_HOST', '127.0.0.1')
 user = os.environ.get('DB_USER', 'dbadmin')
 password = os.environ.get('DB_PASSWORD', 'dbadmin')
 
+DOMAIN = 'kool.karmalabs.com'
+VERSION = 'v1'
+NAMESPACE = os.environ['TVSHOWS_NAMESPACE'] if 'TVSHOWS_NAMESPACE' in os.environ else 'metal3'
 
-class Database:
-    def __init__(self):
-        self.con = pymysql.connect(host=host, user=user, password=password, db=db, cursorclass=pymysql.cursors.
-                                   DictCursor)
-        self.cur = self.con.cursor()
-        self.names = []
-        self.cur.execute("SELECT name, image FROM tvshows")
-        result = self.cur.fetchall()
-        info = {}
-        for entry in result:
-            name = entry['name']
-            image = entry['image']
-            if image == '':
-                image = info[name] if name in info else get_image(name)
-                if image is not None:
-                    self.cur.execute("update tvshows set image='%s' where name='%s'" % (image, name))
-                    self.con.commit()
-            info[name] = image
-        self.names = sorted([name for name in info])
 
-    def list_tvshows(self):
-        results = []
-        for name in self.names:
-            self.cur.execute("SELECT name, finale, image FROM tvshows where name='%s' ORDER BY RAND() LIMIT 1" % name)
-            result = self.cur.fetchall()
-            results.extend(result)
-        return results
-
-    def add_tvshow(self, name, finale):
-        self.cur.execute("insert into tvshows  values (0, '%s','%s','')" % (name, finale))
-        self.con.commit()
-
-    def delete_tvshow(self, name):
-        self.cur.execute("delete from tvshows  where name = '%s'" % (name))
-        self.con.commit()
+def browse_tvshows():
+    results = []
+    crds = client.CustomObjectsApi()
+    tvshows = crds.list_cluster_custom_object(DOMAIN, VERSION, 'tvshows')["items"]
+    for tvshow in tvshows:
+        name = tvshow.get("metadata")["name"]
+        print("Parsing %s" % name)
+        finale = choice(tvshow.get("spec")["finales"])
+        if "image" not in tvshow.get("spec") or tvshow.get("spec")["image"] == '':
+            image = get_image(name.replace('-', ' '))
+            print("Found image %s for %s" % (image, name))
+            tvshow["spec"]["image"] = image
+            crds.replace_namespaced_custom_object(DOMAIN, "v1", NAMESPACE, "tvshows", name, tvshow)
+            print("Handled image for %s" % name)
+        else:
+            image = tvshow.get("spec")["image"]
+        results.append({'name': name, 'finale': finale, 'image': image})
+    return results
 
 
 @app.route('/')
 def index():
-    db = Database()
-    tvshows = db.list_tvshows()
-    return render_template('index.html', tvshows=tvshows, content_type='application/json')
+    return render_template('index.html', content_type='application/json')
 
 
 @app.route('/tvshows')
@@ -61,31 +47,50 @@ def list_tvshows():
 
     :return:
     """
-    db = Database()
-    tvshows = db.list_tvshows()
+    tvshows = browse_tvshows()
     return render_template('tvshows.html', tvshows=tvshows, content_type='application/json')
 
 
 @app.route('/new', methods=['POST'])
 def add_tvshow():
-    name = request.form['name']
+    name = request.form['name'].lower().replace(' ', '-')
     finale = request.form['finale']
-    db = Database()
-    db.add_tvshow(name, finale)
-    result = {'result': 'success'}
+    crds = client.CustomObjectsApi()
+    tvshows = crds.list_cluster_custom_object(DOMAIN, VERSION, 'tvshows')["items"]
+    exist = False
+    for tvshow in tvshows:
+        tvshowname = tvshow.get("metadata")["name"]
+        if tvshowname == name:
+            tvshow.get("spec")["finales"].append(finale)
+            crds.replace_namespaced_custom_object(DOMAIN, "v1", NAMESPACE, "tvshows", name, tvshow)
+            result = {'result': 'success'}
+            exist = True
+            break
+    if not exist:
+        body = {'kind': 'Tvshow', 'spec': {'finales': [finale]}, 'apiVersion': '%s/%s' % (DOMAIN, VERSION),
+                'metadata': {'name': name, 'namespace': NAMESPACE}}
+        try:
+            crds.create_namespaced_custom_object(DOMAIN, VERSION, NAMESPACE, 'tvshows', body)
+            result = {'result': 'success'}
+        except Exception as e:
+            print(e)
+            message = [x.split(':')[1] for x in e.body.split(',') if 'message' in x][0].replace('"', '')
+            result = {'result': 'failure', 'reason': message}
     response = jsonify(result)
-    response.status_code = 200
     return response
 
 
 @app.route('/delete', methods=['POST'])
 def delete_tvshow():
     name = request.form['name']
-    db = Database()
-    db.delete_tvshow(name)
-    result = {'result': 'success'}
+    crds = client.CustomObjectsApi()
+    try:
+        crds.delete_namespaced_custom_object(DOMAIN, VERSION, NAMESPACE, 'tvshows', name, client.V1DeleteOptions())
+        result = {'result': 'success'}
+    except Exception as e:
+        message = [x.split(':')[1] for x in e.body.split(',') if 'message' in x][0].replace('"', '')
+        result = {'result': 'failure', 'reason': message}
     response = jsonify(result)
-    response.status_code = 200
     return response
 
 
@@ -97,4 +102,11 @@ def run():
 
 
 if __name__ == '__main__':
+    if 'KUBERNETES_PORT' in os.environ:
+        config.load_incluster_config()
+    elif 'KUBECONFIG' in os.environ and os.path.exists(os.environ['KUBECONFIG']):
+        kubeconfigfile = os.environ['KUBECONFIG']
+        config.new_client_from_config(config_file=kubeconfigfile)
+    else:
+        config.load_kube_config()
     run()

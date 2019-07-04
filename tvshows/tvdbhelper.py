@@ -4,6 +4,7 @@ tvdb.KEYS.API_KEY = os.environ.get('TVDB_KEY')
 
 
 def get_image(name):
+    # print("using key %s" % tvdb.KEYS.API_KEY)
     search = tvdb.Search()
     try:
         search.series(name)
@@ -11,4 +12,4 @@ def get_image(name):
         show = tvdb.Series(serieid)
         return show.info()['banner']
     except:
-        return None
+        return ""

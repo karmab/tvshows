@@ -5,16 +5,16 @@ MAINTAINER Karim Boumedhel <karimboumedhel@gmail.com>
 LABEL name="karmab/tvshows" \
       maintainer="karimboumedhel@gmail.com" \
       vendor="Karmalabs" \
-      version="latest" \
+      version="v2" \
       release="0" \
       summary="Tvshows finales" \
       description="Tvshows finales"
 
 EXPOSE 9000
 
-RUN apk add --update --no-cache py-pip python3-dev
+RUN apk add --update --no-cache python3-dev git
 RUN pip3 install -U --no-cache-dir setuptools pip
-RUN pip3 install --no-cache-dir -e git+https://github.com/karmab/tvshows.git
+RUN git clone https://github.com/karmab/tvshows.git && cd tvshows && python3 setup.py install
 
 ENTRYPOINT ["/usr/bin/tvshows"]
 #CMD ["-h"]
