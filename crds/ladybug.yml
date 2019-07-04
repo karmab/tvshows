@@ -1,0 +1,8 @@
+apiVersion: "kool.karmalabs.com/v1"
+kind: Tvshow
+metadata:
+  name: "lady-bug"
+spec:
+  finales:
+  - marinette is hakumatized
+  image: text/302218.jpg
