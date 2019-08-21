@@ -20,4 +20,4 @@ spec:
         - containerPort: 9000
         env:
         - name: TVDB_KEY
-          value: ""
+          value: 
